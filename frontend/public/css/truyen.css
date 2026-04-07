@@ -1,292 +1,304 @@
-/* ===== CSS CHUNG CHO TRUYỆN ===== */
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
 
-/* Error/Alert messages */
-.error-box {
-    background: #fee;
-    border: 1px solid #fcc;
-    color: #c33;
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    text-align: center;
+:root {
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --surface-soft: #f1f2f6;
+    --text-main: #121212;
+    --text-sub: #5d6471;
+    --border: #dbe0ea;
+    --primary: #141414;
+    --primary-hover: #2a2a2a;
+    --accent: #2563eb;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --shadow: 0 18px 44px rgba(20, 20, 20, 0.12);
 }
 
-.error-list {
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    color: #721c24;
-    padding: 12px 20px;
-    margin: 15px 0;
-    border-radius: 5px;
-}
-
-.error-list ul {
+* {
     margin: 0;
-    padding-left: 20px;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-/* Textarea trong form */
-.form-textarea {
-    width: 100%;
-    padding: 9px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+body {
+    font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+    color: var(--text-main);
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 12% 18%, #e8eefc 0%, rgba(232, 238, 252, 0) 38%),
+        radial-gradient(circle at 88% 0%, #eceff5 0%, rgba(236, 239, 245, 0) 34%),
+        var(--bg);
+    padding: 32px 16px;
 }
 
-/* Grid thể loại (checkbox) */
-.theloai-grid {
+/* ===== LOGIN-LIKE CENTERING (reuse from log.css) ===== */
+.login-container {
+    min-height: 100vh;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px 20px;
+    place-items: center;
+    padding: 28px 14px;
 }
 
-.theloai-label {
-    display: flex;
+.login-wrapper {
+    width: min(680px, 100%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    padding: 34px 30px 28px;
+    animation: card-enter 0.45s ease;
+}
+
+
+/* ===== TIÊU ĐỀ ===== */
+.form-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 28px;
+    letter-spacing: 0.4px;
+}
+
+/* ===== NÚT QUAY LẠI ===== */
+.btn-home {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-}
-
-/* Form tìm kiếm */
-.search-form {
-    margin: 20px 0;
-}
-
-.search-container {
-    display: flex;
-    gap: 10px;
-    max-width: 1500px;
-}
-
-.search-input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.search-button {
-    padding: 10px 20px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.search-button:hover {
-    background: #0056b3;
-}
-
-.search-clear {
-    padding: 10px 20px;
-    background: #6c757d;
-    color: white;
+    color: var(--accent);
     text-decoration: none;
-    border-radius: 4px;
-    display: inline-block;
-    transition: background 0.3s;
+    font-size: 0.92rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    transition: opacity 0.2s;
 }
 
-.search-clear:hover {
-    background: #545b62;
+.btn-home:hover {
+    opacity: 0.75;
 }
 
-.search-result {
-    margin-top: 10px;
-    color: #666;
+/* ===== FORM WRAPPER ===== */
+.user-form {
+    max-width: 680px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    padding: 34px 30px 28px;
+    animation: card-enter 0.45s ease;
 }
 
-/* Ảnh bìa trong danh sách */
-.cover-image {
-    width: 50px;
-    height: 70px;
-    object-fit: cover;
-    border-radius: 4px;
+@keyframes card-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
-.no-image {
-    color: #999;
-    font-style: italic;
+/* ===== TABLE ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-/* Preview ảnh trong form edit */
+tr {
+    margin-bottom: 16px;
+}
+
+td {
+    padding: 8px 6px;
+    vertical-align: top;
+}
+
+td:first-child {
+    width: 140px;
+    font-weight: 600;
+    font-size: 0.93rem;
+    color: var(--text-main);
+    padding-top: 12px;
+    white-space: nowrap;
+}
+
+/* ===== INPUT / TEXTAREA / SELECT ===== */
+input[type='text'],
+input[type='number'],
+input[type='email'],
+input[type='file'],
+textarea,
+select {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--surface-soft);
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: var(--text-main);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #8f96a4;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+input[type='file'] {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* ===== THỂ LOẠI GRID ===== */
+.theloai-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 4px 0;
+}
+
+.theloai-grid label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.theloai-grid label:hover {
+    background: #e8eefc;
+    border-color: var(--accent);
+}
+
+.theloai-grid input[type='checkbox'] {
+    width: auto;
+    accent-color: var(--accent);
+}
+
+/* ===== ẢNH BÌA PREVIEW ===== */
 .image-preview {
-    width: 100px;
+    width: 120px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--border);
     margin-bottom: 10px;
-    border-radius: 4px;
 }
 
 .image-note {
-    color: #999;
-    font-size: 13px;
+    display: block;
+    color: var(--text-sub);
+    font-size: 0.82rem;
+    margin-top: 4px;
 }
 
-/* Required field */
+/* ===== REQUIRED MARK ===== */
 .required {
-    color: red;
+    color: var(--danger);
 }
 
-/* ===== CHI TIẾT TRUYỆN (USER) ===== */
+/* ===== FORM ACTIONS ===== */
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
 
-/* Nút quay lại */
-.back-button {
-    display: inline-block;
-    padding: 12px 25px;
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    color: white;
+.form-actions button[type='submit'] {
+    border: none;
+    border-radius: 12px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-actions button[type='submit']:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(20, 20, 20, 0.18);
+}
+
+.form-actions button[type='submit']:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-back {
+    color: var(--text-sub);
     text-decoration: none;
-    border-radius: 25px;
+    font-size: 0.93rem;
     font-weight: 600;
-    transition: all 0.3s ease;
-    margin-bottom: 20px;
-}
-
-.back-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-}
-
-/* Card thông tin truyện */
-.truyen-info-card {
-    max-width: 100%;
-    padding: 30px;
-    margin-bottom: 30px;
-    text-align: left;
-}
-
-.truyen-info-grid {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 40px;
-    align-items: start;
-}
-
-/* Ảnh bìa chi tiết */
-.truyen-cover {
-    width: 100%;
-    max-width: 280px;
-    height: auto;
-    object-fit: cover;
+    padding: 12px 20px;
+    border: 1px solid var(--border);
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: background 0.2s, color 0.2s;
 }
 
-/* Thông tin truyện */
-.truyen-details {
-    padding-left: 20px;
+.btn-back:hover {
+    background: var(--surface-soft);
+    color: var(--text-main);
 }
 
-.truyen-title {
-    font-size: 28px;
-    margin-bottom: 20px;
-    color: #2c3e50;
-    text-align: left;
-}
-
-.truyen-info-row {
-    margin: 15px 0;
-    font-size: 16px;
-    line-height: 1.6;
-}
-
-.info-label {
-    color: #34495e;
-    font-weight: 600;
-}
-
-.info-value {
-    color: #7f8c8d;
-}
-
-/* Badge trạng thái */
-.status-badge-inline {
-    color: white;
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 13px;
-}
-
-.status-dangra {
-    background: #3498db;
-}
-
-.status-hoanthanh {
-    background: #27ae60;
-}
-
-.status-tamdung {
-    background: #e74c3c;
-}
-
-/* Lượt xem badge */
-.views-badge {
-    color: #e74c3c;
-    font-weight: 600;
-    padding: 4px 8px;
-    background: #ecf0f1;
-    border-radius: 12px;
-    display: inline-block;
-}
-
-/* Tiêu đề danh sách chương */
-.chuong-title {
+/* ===== API MESSAGE ===== */
+#api-message {
+    max-width: 680px;
+    margin: 12px auto;
     text-align: center;
-    margin-bottom: 25px;
+    font-size: 0.93rem;
+    font-weight: 600;
+    min-height: 22px;
 }
 
-/* Card chương */
-.chuong-card-title {
-    color: #2c3e50;
-    font-size: 16px;
-}
-
-.chuong-name {
-    color: #7f8c8d;
-    font-size: 14px;
-    margin-top: 8px;
-}
-
-.chuong-date {
-    color: #95a5a6;
-    font-size: 12px;
-    margin-top: 5px;
-}
-
-/* Empty state */
-.empty-chuong {
-    text-align: center;
-    padding: 40px;
-}
-
-.empty-chuong p {
-    color: #7f8c8d;
-    font-size: 16px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .truyen-info-grid {
-        grid-template-columns: 1fr;
-        text-align: center;
-        justify-items: center;
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+    .user-form {
+        padding: 24px 16px 20px;
+        border-radius: 16px;
     }
 
-    .truyen-cover {
-        width: 200px;
-        height: auto;
-        margin: 0 auto;
-    }
-    
-    .truyen-details {
-        padding-left: 0;
+    td:first-child {
+        width: 110px;
+        font-size: 0.88rem;
     }
 
-    .theloai-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .search-container {
+    .form-actions {
         flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-back {
+        text-align: center;
     }
 }
