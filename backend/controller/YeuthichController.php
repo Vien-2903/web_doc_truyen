@@ -80,22 +80,48 @@ class YeuthichController {
         $id_truyen = $data['id_truyen'] ?? 0;
 
         if (!$id_nguoidung || !$id_truyen) {
-            return $this->response(400, false, 'Thiếu dữ liệu');
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Thiếu dữ liệu'
+                ]
+            ];
         }
 
         if ($this->model->isLiked($id_nguoidung, $id_truyen)) {
             $this->model->removeLike($id_nguoidung, $id_truyen);
-            return $this->response(200, true, 'removed');
+            return [
+                'status' => 200,
+                'body' => [
+                    'success' => true,
+                    'message' => 'Đã bỏ yêu thích',
+                    'is_liked' => false
+                ]
+            ];
         } else {
             $this->model->addLike($id_nguoidung, $id_truyen);
-            return $this->response(201, true, 'added');
+            return [
+                'status' => 200,
+                'body' => [
+                    'success' => true,
+                    'message' => 'Đã thêm yêu thích',
+                    'is_liked' => true
+                ]
+            ];
         }
     }
 
     // Get favorites
     public function getFavoritesApi($id_nguoidung) {
         if (!$id_nguoidung) {
-            return $this->response(400, false, 'Thiếu id');
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Thiếu id người dùng'
+                ]
+            ];
         }
 
         $data = $this->model->getLikedTruyenByUser($id_nguoidung);
@@ -104,6 +130,7 @@ class YeuthichController {
             'status' => 200,
             'body' => [
                 'success' => true,
+                'message' => 'Lấy danh sách thành công',
                 'data' => $data
             ]
         ];
@@ -115,12 +142,24 @@ class YeuthichController {
         $id_truyen = $data['id_truyen'] ?? 0;
 
         if (!$id_nguoidung || !$id_truyen) {
-            return $this->response(400, false, 'Thiếu dữ liệu');
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Thiếu dữ liệu'
+                ]
+            ];
         }
 
         $this->model->removeLike($id_nguoidung, $id_truyen);
 
-        return $this->response(200, true, 'Đã xóa');
+        return [
+            'status' => 200,
+            'body' => [
+                'success' => true,
+                'message' => 'Đã xóa khỏi yêu thích'
+            ]
+        ];
     }
 
     // Check
@@ -129,7 +168,13 @@ class YeuthichController {
         $id_truyen = $data['id_truyen'] ?? 0;
 
         if (!$id_nguoidung || !$id_truyen) {
-            return $this->response(400, false);
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Thiếu dữ liệu'
+                ]
+            ];
         }
 
         $liked = $this->model->isLiked($id_nguoidung, $id_truyen);
@@ -138,7 +183,8 @@ class YeuthichController {
             'status' => 200,
             'body' => [
                 'success' => true,
-                'liked' => $liked
+                'message' => 'Kiểm tra thành công',
+                'is_liked' => $liked
             ]
         ];
     }

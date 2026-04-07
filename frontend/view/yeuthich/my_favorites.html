@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truyện Yêu Thích</title>
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/yeuthich_favorites.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <a href="/web_doc_truyen/frontend/public/index.html" class="back-button">← Quay lại</a>
+
+        <header class="page-header">
+            <h1>❤️ Danh sách truyện yêu thích</h1>
+            <p class="page-subtitle">Nơi lưu lại những truyện bạn đã đánh dấu yêu thích.</p>
+        </header>
+
+        <div id="apiMessage" class="api-message">Đang tải danh sách yêu thích...</div>
+
+        <section id="favoritesContainer" class="favorites-container"></section>
+    </div>
+
+    <script>
+        const apiMessage = document.getElementById('apiMessage');
+        const favoritesContainer = document.getElementById('favoritesContainer');
+
+        function getCurrentUser() {
+            try {
+                return JSON.parse(localStorage.getItem('user') || 'null');
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function renderEmptyState() {
+            favoritesContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">💔</div>
+                    <h2>Bạn chưa có truyện yêu thích nào</h2>
+                    <p>Hãy đăng nhập và đánh dấu yêu thích những truyện bạn muốn lưu lại.</p>
+                    <a class="primary-button" href="/web_doc_truyen/frontend/view/log/login.html">Đăng nhập</a>
+                </div>
+            `;
+        }
+
+        function renderNoFavorites() {
+            favoritesContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📖</div>
+                    <h2>Danh sách yêu thích trống</h2>
+                    <p>Bạn chưa thích truyện nào. Khám phá và thêm truyện vào danh sách yêu thích của mình.</p>
+                    <a class="primary-button" href="/web_doc_truyen/frontend/public/index.html">Khám phá truyện</a>
+                </div>
+            `;
+        }
+
+        function renderFavorites(items) {
+            favoritesContainer.innerHTML = items.map(item => {
+                const author = item.but_danh || item.ten_tacgia || 'Chưa rõ';
+                const imageUrl = item.anh_bia || 'https://via.placeholder.com/180x240/667eea/ffffff?text=No+Image';
+                return `
+                    <article class="favorite-card" data-id="${item.id}">
+                        <a class="favorite-link" href="/web_doc_truyen/frontend/public/index.php?page=chitiet&id=${item.id}">
+                            <div class="favorite-cover">
+                                <img src="${imageUrl}" alt="${item.ten_truyen}" onerror="this.src='https://via.placeholder.com/180x240/667eea/ffffff?text=No+Image'">
+                            </div>
+                            <div class="favorite-details">
+                                <h2>${item.ten_truyen}</h2>
+                                <p class="favorite-author">Tác giả: ${author}</p>
+                                <p class="favorite-meta">👁️ ${Number(item.luot_xem || 0).toLocaleString()} lượt xem</p>
+                            </div>
+                        </a>
+                        <button class="btn-remove-favorite" data-id="${item.id}">💔 Bỏ yêu thích</button>
+                    </article>
+                `;
+            }).join('');
+
+            document.querySelectorAll('.btn-remove-favorite').forEach(button => {
+                button.addEventListener('click', async function () {
+                    const user = getCurrentUser();
+                    if (!user || !user.id) {
+                        window.location.href = '/web_doc_truyen/frontend/view/log/login.html';
+                        return;
+                    }
+                    const truyenId = button.dataset.id;
+                    const card = button.closest('.favorite-card');
+                    const confirmRemove = window.confirm('Bạn có chắc muốn bỏ yêu thích truyện này?');
+                    if (!confirmRemove) return;
+
+                    button.disabled = true;
+                    button.textContent = 'Đang xóa...';
+
+                    try {
+                        const response = await fetch('/web_doc_truyen/backend/api/yeuthich/remove.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                id_nguoidung: user.id,
+                                id_truyen: truyenId
+                            })
+                        });
+                        const data = await response.json();
+
+                        if (response.ok && data.success) {
+                            card.remove();
+                            const visibleCards = document.querySelectorAll('.favorite-card');
+                            if (visibleCards.length === 0) {
+                                renderNoFavorites();
+                            }
+                            apiMessage.textContent = 'Đã bỏ yêu thích thành công.';
+                            apiMessage.className = 'api-message success';
+                        } else {
+                            apiMessage.textContent = data.message || 'Xóa yêu thích thất bại.';
+                            apiMessage.className = 'api-message error';
+                        }
+                    } catch (error) {
+                        apiMessage.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
+                        apiMessage.className = 'api-message error';
+                    } finally {
+                        button.disabled = false;
+                        button.textContent = '💔 Bỏ yêu thích';
+                    }
+                });
+            });
+        }
+
+        async function loadFavorites() {
+            const user = getCurrentUser();
+            if (!user || !user.id) {
+                apiMessage.textContent = 'Bạn cần đăng nhập để xem danh sách yêu thích.';
+                apiMessage.className = 'api-message warning';
+                renderEmptyState();
+                return;
+            }
+
+            try {
+                const response = await fetch('/web_doc_truyen/backend/api/yeuthich/get_by_user.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id_nguoidung: user.id })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success && Array.isArray(data.data)) {
+                    if (data.data.length === 0) {
+                        apiMessage.textContent = 'Chưa có truyện yêu thích.';
+                        apiMessage.className = 'api-message info';
+                        renderNoFavorites();
+                    } else {
+                        apiMessage.textContent = 'Danh sách yêu thích đã sẵn sàng.';
+                        apiMessage.className = 'api-message success';
+                        renderFavorites(data.data);
+                    }
+                } else {
+                    apiMessage.textContent = data.message || 'Không tải được yêu thích.';
+                    apiMessage.className = 'api-message error';
+                    renderNoFavorites();
+                }
+            } catch (error) {
+                apiMessage.textContent = 'Lỗi kết nối tới API. Vui lòng thử lại.';
+                apiMessage.className = 'api-message error';
+                renderNoFavorites();
+            }
+        }
+
+        loadFavorites();
+    </script>
+</body>
+</html>

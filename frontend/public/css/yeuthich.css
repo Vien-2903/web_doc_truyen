@@ -52,6 +52,22 @@
     cursor: not-allowed;
 }
 
+.btn-favorite-action.liked {
+    color: #e74c3c;
+}
+
+.btn-favorite-action.not-liked {
+    color: #7f8c8d;
+}
+
+.story-actions {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
 .heart-icon {
     transition: transform 0.2s ease;
     display: inline-block;
