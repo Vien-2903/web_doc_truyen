@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Bình Luận</title>
+
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/admin.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/binhluan.css">
+</head>
+<body>
+
+<a href="list_truyen.html" class="btn-home">← Quay lại</a>
+
+<h1 class="form-title">Viết bình luận</h1>
+
+<div id="api-message"></div>
+
+<div class="user-form">
+    <form id="form-binhluan">
+        <table>
+            <tr>
+                <td>Chương: <span class="required">*</span></td>
+                <td>
+                    <select name="id_chuong" id="select-chuong" required>
+                        <option value="">-- Đang tải chương... --</option>
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Nội dung: <span class="required">*</span></td>
+                <td>
+                    <textarea name="noi_dung" rows="8" placeholder="Nhập bình luận..." required></textarea>
+                </td>
+            </tr>
+        </table>
+
+        <div class="form-actions">
+            <button type="submit">Gửi bình luận</button>
+            <a href="list_truyen.html" class="btn-back">Hủy</a>
+        </div>
+    </form>
+</div>
+
+<script src="/web_doc_truyen/frontend/public/js/binhluan-add.js"></script>
+
+</body>
+</html>
