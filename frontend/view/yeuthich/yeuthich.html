@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Truyện Yêu Thích</title>
-    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/yeuthich_favorites.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/yeuthich.css">
 </head>
 <body>
     <div class="page-wrapper">
@@ -24,12 +24,85 @@
         const apiMessage = document.getElementById('apiMessage');
         const favoritesContainer = document.getElementById('favoritesContainer');
 
-        function getCurrentUser() {
+        async function getCurrentUser() {
             try {
-                return JSON.parse(localStorage.getItem('user') || 'null');
+                const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+                if (storedUser && storedUser.id) {
+                    return storedUser;
+                }
             } catch (error) {
-                return null;
+                // ignore
             }
+
+            try {
+                const response = await fetch('/web_doc_truyen/backend/api/profile/profile_api.php', {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    return null;
+                }
+
+                const data = await response.json();
+                if (data && data.success && data.data && data.data.id) {
+                    const user = {
+                        id: data.data.id,
+                        username: data.data.ten_dang_nhap || '',
+                        email: data.data.email || '',
+                        role: data.data.vai_tro || 'user'
+                    };
+                    localStorage.setItem('user', JSON.stringify(user));
+                    return user;
+                }
+            } catch (error) {
+                console.warn('Không thể lấy thông tin user từ server:', error);
+            }
+
+            return null;
+        }
+
+        function resolveCoverUrl(anhBia) {
+            if (!anhBia) {
+                return 'https://via.placeholder.com/180x240/667eea/ffffff?text=No+Image';
+            }
+
+            let normalized = String(anhBia).trim().replace(/\\/g, '/');
+
+            if (normalized.startsWith('http://') || normalized.startsWith('https://') || normalized.startsWith('/')) {
+                if (!normalized.startsWith('/web_doc_truyen/')) {
+                    return normalized;
+                }
+                normalized = normalized.replace(/^\/web_doc_truyen\//, '');
+            }
+
+            if (normalized.startsWith('web_doc_truyen/')) {
+                normalized = normalized.replace(/^web_doc_truyen\//, '');
+            }
+
+            const legacyPrefixes = [
+                'uploads/anhbia/',
+                'frontend/public/uploads/anhbia/',
+                'frontend/images/anhbia/',
+                'images/anhbia/',
+                'backend/uploads/anhbia/'
+            ];
+
+            for (const prefix of legacyPrefixes) {
+                if (normalized.startsWith(prefix)) {
+                    const parts = normalized.split('/').filter(Boolean);
+                    const fileName = parts[parts.length - 1] || '';
+                    if (fileName) {
+                        return '/web_doc_truyen/backend/uploads/anhbia/' + fileName;
+                    }
+                }
+            }
+
+            if (normalized.startsWith('backend/') || normalized.startsWith('frontend/')) {
+                return '/web_doc_truyen/' + normalized;
+            }
+
+            return '/web_doc_truyen/' + normalized;
         }
 
         function renderEmptyState() {
@@ -57,7 +130,7 @@
         function renderFavorites(items) {
             favoritesContainer.innerHTML = items.map(item => {
                 const author = item.but_danh || item.ten_tacgia || 'Chưa rõ';
-                const imageUrl = item.anh_bia || 'https://via.placeholder.com/180x240/667eea/ffffff?text=No+Image';
+                const imageUrl = resolveCoverUrl(item.anh_bia);
                 return `
                     <article class="favorite-card" data-id="${item.id}">
                         <a class="favorite-link" href="/web_doc_truyen/frontend/public/index.php?page=chitiet&id=${item.id}">
@@ -77,7 +150,7 @@
 
             document.querySelectorAll('.btn-remove-favorite').forEach(button => {
                 button.addEventListener('click', async function () {
-                    const user = getCurrentUser();
+                    const user = await getCurrentUser();
                     if (!user || !user.id) {
                         window.location.href = '/web_doc_truyen/frontend/view/log/login.html';
                         return;
@@ -127,7 +200,7 @@
         }
 
         async function loadFavorites() {
-            const user = getCurrentUser();
+            const user = await getCurrentUser();
             if (!user || !user.id) {
                 apiMessage.textContent = 'Bạn cần đăng nhập để xem danh sách yêu thích.';
                 apiMessage.className = 'api-message warning';
@@ -166,6 +239,20 @@
                 renderNoFavorites();
             }
         }
+
+        // Lắng nghe sự kiện cập nhật từ trang chủ
+        window.addEventListener('favoritesUpdated', function(event) {
+            console.log('Sự kiện favoritesUpdated nhận được:', event.detail);
+            loadFavorites();
+        });
+
+        // Lắng nghe thay đổi localStorage để đồng bộ giữa các tab
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'favoriteListUpdatedAt') {
+                console.log('Storage event favoritesUpdated nhận được:', event.newValue);
+                loadFavorites();
+            }
+        });
 
         loadFavorites();
     </script>

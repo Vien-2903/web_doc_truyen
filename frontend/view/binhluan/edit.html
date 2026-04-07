@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sửa bình luận</title>
+
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/admin.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/binhluan.css">
+</head>
+<body>
+
+<a href="javascript:history.back()" class="btn-home">← Quay lại</a>
+
+<h1 class="form-title">Sửa bình luận</h1>
+
+<div id="api-message"></div>
+
+<div class="user-form">
+    <form id="form-edit">
+
+        <div class="form-group">
+            <label>Người đăng:</label>
+            <input type="text" id="ten_dang_nhap" readonly class="readonly-input">
+        </div>
+
+        <div class="form-group">
+            <label>Ngày tạo:</label>
+            <input type="text" id="ngay_tao" readonly class="readonly-input">
+        </div>
+
+        <div class="form-group">
+            <label>Nội dung bình luận: <span class="required">*</span></label>
+            <textarea name="noi_dung" id="noi_dung" rows="8" required></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">💾 Lưu thay đổi</button>
+            <a href="javascript:history.back()" class="btn-back">← Hủy</a>
+        </div>
+
+    </form>
+</div>
+
+<script src="/web_doc_truyen/frontend/public/js/binhluan-edit.js"></script>
+
+</body>
+</html>

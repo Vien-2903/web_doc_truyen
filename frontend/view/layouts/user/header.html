@@ -28,7 +28,7 @@
                     <a href="/web_doc_truyen/frontend/public/index.php" class="quick-nav-link">
                         Lịch Sử
                     </a>
-                    <a href="/web_doc_truyen/frontend/public/index.php" class="quick-nav-link">
+                    <a href="/web_doc_truyen/frontend/view/yeuthich/yeuthich.html" class="quick-nav-link" id="favorite-link">
                         Yêu Thích
                     </a>
                     <a href="/web_doc_truyen/frontend/public/index.php" class="quick-nav-link">
@@ -123,6 +123,46 @@
                 navRight.appendChild(loginLink);
             }
 
+            function setupFavoriteNav() {
+                var favoriteLink = document.getElementById('favorite-link');
+                if (!favoriteLink) {
+                    return;
+                }
+
+                favoriteLink.addEventListener('click', function (event) {
+                    event.preventDefault();
+
+                    fetch('/web_doc_truyen/backend/api/yeuthich/open.php', {
+                        method: 'GET',
+                        credentials: 'same-origin'
+                    })
+                        .then(function (response) {
+                            if (!response.ok) {
+                                return response.json().then(function (data) {
+                                    throw data;
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(function (data) {
+                            if (data.success) {
+                                window.location.href = '/web_doc_truyen/frontend/view/yeuthich/yeuthich.html';
+                            } else if (data.login_required) {
+                                window.location.href = '/web_doc_truyen/frontend/view/log/login.html';
+                            } else {
+                                window.location.href = '/web_doc_truyen/frontend/view/yeuthich/yeuthich.html';
+                            }
+                        })
+                        .catch(function (error) {
+                            if (error && error.login_required) {
+                                window.location.href = '/web_doc_truyen/frontend/view/log/login.html';
+                            } else {
+                                window.location.href = '/web_doc_truyen/frontend/view/yeuthich/yeuthich.html';
+                            }
+                        });
+                });
+            }
+
             function loadHeaderData() {
                 var queryString = window.location.search || '';
 
@@ -138,6 +178,7 @@
                     .then(function (data) {
                         renderCategories(data.danhSachTheLoai, data.thongBaoTheLoai);
                         renderUser(data.user || {});
+                        setupFavoriteNav();
 
                         if (keywordInput) {
                             keywordInput.value = data.keyword || '';
