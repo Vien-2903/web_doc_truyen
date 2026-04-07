@@ -1,13 +1,24 @@
-<?php include __DIR__ . '/../layouts/admin/header.php'; ?>
-<?php require_once __DIR__ . '/../layouts/cover_image_helper.php'; ?>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Bình luận</title>
 
-<h1>Quản lý Bình luận</h1>
+    <link rel="stylesheet" href="../public/css/admin.css">
+    <link rel="stylesheet" href="../public/css/binhluan.css">
+</head>
+<body>
 
-<div style="margin-bottom: 20px;">
+<h1 class="form-title">Quản lý Bình luận</h1>
+
+<div class="top-bar">
     <a href="index.php?page=user&controller=home" class="btn-action">← Quay lại</a>
 </div>
 
-<table>
+<div id="api-message"></div>
+
+<table class="table">
     <thead>
         <tr>
             <th>ID</th>
@@ -19,110 +30,72 @@
             <th>Hành động</th>
         </tr>
     </thead>
-    <tbody>
-        <?php if (empty($truyens)): ?>
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 20px;">
-                    <?php if ($_SESSION['user']['vai_tro'] === 'admin'): ?>
-                        Chưa có truyện nào
-                    <?php else: ?>
-                        Bạn chưa bình luận truyện nào
-                    <?php endif; ?>
-                </td>
-            </tr>
-        <?php else: ?>
-            <?php foreach ($truyens as $truyen): ?>
-                <tr>
-                    <td><?php echo $truyen['id']; ?></td>
-                    <td>
-                        <?php if ($truyen['anh_bia']): ?>
-                            <img src="<?php echo htmlspecialchars(resolve_cover_image_url($truyen['anh_bia'])); ?>"
-                                 alt="Ảnh bìa" 
-                                 style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px;"
-                                 onerror="this.src='https://via.placeholder.com/60x80/2c3e50/ffffff?text=No+Image'">
-                        <?php else: ?>
-                            <span style="color: #999;">Không có ảnh</span>
-                        <?php endif; ?>
-                    </td>
-                    <td><?php echo htmlspecialchars($truyen['ten_truyen']); ?></td>
-                    <td>
-                        <?php 
-                        echo $truyen['but_danh'] 
-                            ? htmlspecialchars($truyen['but_danh']) 
-                            : htmlspecialchars($truyen['ten_tacgia']); 
-                        ?>
-                    </td>
-                    <td>
-                        <?php if ($truyen['trang_thai'] == 'dang_ra'): ?>
-                            <span class="status-badge status-active">Đang ra</span>
-                        <?php else: ?>
-                            <span class="status-badge status-inactive">Hoàn thành</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <span style="font-weight: bold; color: #4285f4;">
-                            💬 <?php 
-                                // Hiển thị số bình luận tùy vai trò
-                                if ($_SESSION['user']['vai_tro'] === 'admin') {
-                                    echo $truyen['total_comments'];
-                                } else {
-                                    echo $truyen['my_comments'];
-                                }
-                            ?>
-                        </span>
-                    </td>
-                    <td>
-                        <a href="index.php?page=binhluan&action=viewComments&id_truyen=<?php echo $truyen['id']; ?>" 
-                           class="btn-action">
-                            👁️ Xem
-                        </a>
-                        <a href="index.php?page=binhluan&action=addForm&id_truyen=<?php echo $truyen['id']; ?>" 
-                           class="btn-action">
-                            ✍️ Viết
-                        </a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        <?php endif; ?>
+    <tbody id="table-body">
+        <tr>
+            <td colspan="7" style="text-align:center">Đang tải dữ liệu...</td>
+        </tr>
     </tbody>
 </table>
 
-<style>
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-}
+<script>
+document.addEventListener('DOMContentLoaded', async function(){
 
-.status-active {
-    background-color: #d4edda;
-    color: #155724;
-}
+    const tbody = document.getElementById('table-body');
+    const msgBox = document.getElementById('api-message');
 
-.status-inactive {
-    background-color: #cce5ff;
-    color: #004085;
-}
+    async function loadData(){
+        try{
+            const res = await fetch('../../../backend/api/binhluan/get_truyen_comments.php');
+            const json = await res.json();
 
-.btn-action {
-    background-color: white !important;
-    color: #5b9bd5 !important;
-    padding: 8px 16px !important;
-    border: 2px solid #5b9bd5 !important;
-    border-radius: 4px !important;
-    text-decoration: none !important;
-    font-size: 14px !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    transition: all 0.3s !important;
-    margin: 0 2px !important;
-}
+            const list = json.data || [];
 
-.btn-action:hover {
-    background-color: #5b9bd5 !important;
-    color: white !important;
-}
-</style>
+            if(list.length === 0){
+                tbody.innerHTML = `<tr>
+                    <td colspan="7" style="text-align:center">Không có dữ liệu</td>
+                </tr>`;
+                return;
+            }
 
-<?php include __DIR__ . '/../layouts/admin/footer.php'; ?>
+            tbody.innerHTML = '';
+
+            list.forEach(truyen => {
+
+                const status = truyen.trang_thai === 'dang_ra'
+                    ? '<span class="status-badge status-active">Đang ra</span>'
+                    : '<span class="status-badge status-inactive">Hoàn thành</span>';
+
+                const row = `
+                    <tr>
+                        <td>${truyen.id}</td>
+                        <td>
+                            ${truyen.anh_bia 
+                                ? `<img src="${truyen.anh_bia}" class="cover-img">`
+                                : '<span class="no-image">Không có ảnh</span>'}
+                        </td>
+                        <td>${truyen.ten_truyen}</td>
+                        <td>${truyen.but_danh || truyen.ten_tacgia}</td>
+                        <td>${status}</td>
+                        <td class="comment-count">💬 ${truyen.total_comments}</td>
+                        <td>
+                            <a href="view_binhluan.html?id_truyen=${truyen.id}" class="btn-action">👁️ Xem</a>
+                            <a href="add_binhluan.html?id_truyen=${truyen.id}" class="btn-action">✍️ Viết</a>
+                        </td>
+                    </tr>
+                `;
+
+                tbody.innerHTML += row;
+            });
+
+        }catch(err){
+            msgBox.style.color = 'red';
+            msgBox.textContent = 'Lỗi tải dữ liệu';
+        }
+    }
+
+    loadData();
+});
+</script>
+
+</body>
+</html>

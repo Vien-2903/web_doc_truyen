@@ -1,0 +1,89 @@
+/* ===== CARD ===== */
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+/* ===== TRUYỆN ===== */
+.truyen-box {
+    display: flex;
+    gap: 20px;
+}
+
+.cover-img-lg {
+    width: 120px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* ===== COMMENT ===== */
+.comment-box {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.my-comment {
+    border-left: 4px solid #3498db;
+    background: #eef065;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.comment-meta {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.comment-content {
+    margin-bottom: 10px;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ===== EMPTY ===== */
+.empty {
+    text-align: center;
+    color: #999;
+    padding: 40px;
+}
+
+/* ===== ALERT ===== */
+.alert-success {
+    background: #d4edda;
+    padding: 10px;
+}
+
+.alert-error {
+    background: #f8d7da;
+    padding: 10px;
+}
+
+/* ===== BUTTON ===== */
+.btn-delete {
+    color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+.btn-delete:hover {
+    background: #e74c3c;
+    color: white;
+}
+
+/* ===== TEXT ===== */
+.me {
+    color: #3498db;
+    font-size: 12px;
+}
