@@ -3,7 +3,7 @@ class Database {
     private $host = "localhost";
     private $port = 3306;
     private $username = "root";
-    private $password = "";
+    private $password = "Trunghieu66@";
     private $database = "doc_truyen_web";
     private $conn = null;
 
