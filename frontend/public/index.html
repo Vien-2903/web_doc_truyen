@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -6,9 +6,9 @@
     <title>Web Đọc Truyện</title>
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/theloai_user.css">
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/home.css?v=20260403-1">
-    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/yeuthich.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/theo_doi_truyen.css?v=20260408-5">
     <link rel="stylesheet" href="../public/fonts/fontawesome-free-7.2.0-web/css/all.min.css">
-    <script src="/web_doc_truyen/frontend/public/js/favorites.js"></script>
+    <script src="/web_doc_truyen/frontend/public/js/theodoi.js?v=20260408-4"></script>
 </head>
 <body>
     <div id="header-container"></div>
@@ -19,16 +19,16 @@
             <div class="story-grid" id="story-grid">
                 <div class="story-status">Đang tải danh sách truyện...</div>
             </div>
-            </div>
+        </div>
     </section>
 
     <script>
         const headerContainer = document.getElementById('header-container');
         const storyGrid = document.getElementById('story-grid');
-        
+
         async function loadHeader() {
             try {
-                const response = await fetch('/web_doc_truyen/frontend/view/layouts/user/header.html', {
+                const response = await fetch('/web_doc_truyen/frontend/view/layouts/user/header.html?v=20260408-3', {
                     credentials: 'same-origin'
                 });
 
@@ -50,13 +50,11 @@
 
                 scripts.forEach((script) => {
                     const runtimeScript = document.createElement('script');
-
                     if (script.src) {
                         runtimeScript.src = script.src;
                     } else {
                         runtimeScript.textContent = script.textContent;
                     }
-
                     document.body.appendChild(runtimeScript);
                 });
             } catch (error) {
@@ -130,25 +128,22 @@
                 const title = escapeHtml(story.ten_truyen || 'Không có tiêu đề');
                 const author = escapeHtml(story.tac_gia || 'Chưa rõ');
                 const cover = resolveCoverUrl(story.anh_bia);
-                const legacyCover = '';
 
                 return `
                     <article class="story-card" data-story-id="${story.id}">
                         <a href="/web_doc_truyen/frontend/public/index.php?page=chitiet&id=${story.id}">
-                            <img src="${cover}" alt="${title}" data-legacy-src="${escapeHtml(legacyCover)}" onerror="if(this.dataset.legacySrc && this.src !== this.dataset.legacySrc){this.src=this.dataset.legacySrc;this.dataset.legacySrc='';return;}this.src='https://via.placeholder.com/180x240/2c3e50/ffffff?text=No+Image'">
+                            <img src="${cover}" alt="${title}" onerror="this.src='https://via.placeholder.com/180x240/2c3e50/ffffff?text=No+Image'">
                             <h3>${title}</h3>
                             <p>Tác giả: ${author}</p>
                             <div class="story-meta">
-                                <span>
-                                    <i class="fa-solid fa-eye"></i>
-                                    ${formatViewCount(story.luot_xem)}</span>
+                                <span><i class="fa-solid fa-eye"></i> ${formatViewCount(story.luot_xem)}</span>
                             </div>
                         </a>
                     </article>
                 `;
             }).join('');
 
-            initializeFavorites();
+            initializeTheoDoiTruyen();
         }
 
         async function loadStories() {
@@ -163,7 +158,7 @@
                 renderStories(data.stories || []);
             } catch (error) {
                 console.error('Lỗi tải danh sách truyện:', error);
-                storyGrid.innerHTML = '<div class="story-status"><h3>⚠ Không tải được dữ liệu</h3><p>Vui lòng thử lại sau.</p></div>';
+                storyGrid.innerHTML = '<div class="story-status"><h3>Không tải được dữ liệu</h3><p>Vui lòng thử lại sau.</p></div>';
             }
         }
 
@@ -172,3 +167,5 @@
     </script>
 </body>
 </html>
+
+

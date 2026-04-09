@@ -1,9 +1,9 @@
 <?php
 class Database {
     private $host = "localhost";
-    private $port = 3306;
+    private $port = 3307;
     private $username = "root";
-    private $password = "Trunghieu66@";
+    private $password = "";
     private $database = "doc_truyen_web";
     private $conn = null;
 

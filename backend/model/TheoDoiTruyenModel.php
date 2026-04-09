@@ -1,142 +1,127 @@
 <?php
 require_once __DIR__ . '/../database/myconnection.php';
 
-class YeuthichModel {
+class TheoDoiTruyenModel {
     private $conn;
-    private $table = "yeuthich";
+    private $table = 'theo_doi_truyen';
 
     public function __construct() {
         $database = new Database();
         $this->conn = $database->connect();
     }
 
-    // Kiểm tra người dùng đã yêu thích truyện chưa
-    public function isLiked($id_nguoidung, $id_truyen) {
+    public function isFollowing($id_nguoidung, $id_truyen) {
         $id_nguoidung = mysqli_real_escape_string($this->conn, $id_nguoidung);
         $id_truyen = mysqli_real_escape_string($this->conn, $id_truyen);
-        
-        $query = "SELECT * FROM {$this->table} 
-                  WHERE id_nguoidung = '$id_nguoidung' 
+
+        $query = "SELECT 1 FROM {$this->table}
+                  WHERE id_nguoidung = '$id_nguoidung'
                   AND id_truyen = '$id_truyen'";
-        
+
         $result = mysqli_query($this->conn, $query);
-        
         if (!$result) {
-            die("Lỗi truy vấn isLiked: " . mysqli_error($this->conn));
+            die('Loi truy van isFollowing: ' . mysqli_error($this->conn));
         }
-        
+
         return mysqli_num_rows($result) > 0;
     }
 
-    // Thêm yêu thích
-    public function addLike($id_nguoidung, $id_truyen) {
+    public function addFollow($id_nguoidung, $id_truyen) {
         $id_nguoidung = mysqli_real_escape_string($this->conn, $id_nguoidung);
         $id_truyen = mysqli_real_escape_string($this->conn, $id_truyen);
-        
-        if ($this->isLiked($id_nguoidung, $id_truyen)) {
+
+        if ($this->isFollowing($id_nguoidung, $id_truyen)) {
             return false;
         }
-        
-        $query = "INSERT INTO {$this->table} (id_nguoidung, id_truyen) 
+
+        $query = "INSERT INTO {$this->table} (id_nguoidung, id_truyen)
                   VALUES ('$id_nguoidung', '$id_truyen')";
-        
+
         return mysqli_query($this->conn, $query);
     }
 
-    // Xóa yêu thích
-    public function removeLike($id_nguoidung, $id_truyen) {
+    public function removeFollow($id_nguoidung, $id_truyen) {
         $id_nguoidung = mysqli_real_escape_string($this->conn, $id_nguoidung);
         $id_truyen = mysqli_real_escape_string($this->conn, $id_truyen);
-        
-        $query = "DELETE FROM {$this->table} 
-                  WHERE id_nguoidung = '$id_nguoidung' 
+
+        $query = "DELETE FROM {$this->table}
+                  WHERE id_nguoidung = '$id_nguoidung'
                   AND id_truyen = '$id_truyen'";
-        
+
         return mysqli_query($this->conn, $query);
     }
 
-    // Lấy danh sách truyện yêu thích của người dùng (CHI TIẾT)
-    public function getLikedTruyenByUser($id_nguoidung) {
+    public function getFollowedTruyenByUser($id_nguoidung) {
         $id_nguoidung = mysqli_real_escape_string($this->conn, $id_nguoidung);
-        
-        // BỎ ngay_tao - không cần cột này nữa
-        $query = "SELECT t.*, 
-                         tg.ten_tacgia,
-                         tg.but_danh
-                  FROM {$this->table} yt
-                  INNER JOIN truyen t ON yt.id_truyen = t.id
+
+        $query = "SELECT t.*, tg.ten_tacgia, tg.but_danh, tdt.ngay_theo_doi
+                  FROM {$this->table} tdt
+                  INNER JOIN truyen t ON tdt.id_truyen = t.id
                   LEFT JOIN tacgia tg ON t.id_tacgia = tg.id
-                  WHERE yt.id_nguoidung = '$id_nguoidung'
-                  ORDER BY yt.id_truyen DESC";
-        
+                  WHERE tdt.id_nguoidung = '$id_nguoidung'
+                  ORDER BY tdt.ngay_theo_doi DESC, t.id DESC";
+
         $result = mysqli_query($this->conn, $query);
-        
         if (!$result) {
-            die("Lỗi truy vấn getLikedTruyenByUser: " . mysqli_error($this->conn));
+            die('Loi truy van getFollowedTruyenByUser: ' . mysqli_error($this->conn));
         }
-        
+
         $truyens = [];
         while ($row = mysqli_fetch_assoc($result)) {
             $truyens[] = $row;
         }
-        
+
         return $truyens;
     }
 
-    // Lấy danh sách ID truyện đã yêu thích (dùng cho home page)
-    public function getLikedTruyenIdsByUser($id_nguoidung) {
+    public function getFollowedTruyenIdsByUser($id_nguoidung) {
         $id_nguoidung = mysqli_real_escape_string($this->conn, $id_nguoidung);
-        
-        $query = "SELECT id_truyen 
-                  FROM {$this->table} 
+
+        $query = "SELECT id_truyen
+                  FROM {$this->table}
                   WHERE id_nguoidung = '$id_nguoidung'";
-        
+
         $result = mysqli_query($this->conn, $query);
-        
         if (!$result) {
-            die("Lỗi truy vấn getLikedTruyenIdsByUser: " . mysqli_error($this->conn));
+            die('Loi truy van getFollowedTruyenIdsByUser: ' . mysqli_error($this->conn));
         }
-        
+
         $ids = [];
         while ($row = mysqli_fetch_assoc($result)) {
             $ids[] = $row['id_truyen'];
         }
-        
+
         return $ids;
     }
 
-    // Đếm số lượt yêu thích của 1 truyện
-    public function countLikes($id_truyen) {
+    public function countFollows($id_truyen) {
         $id_truyen = mysqli_real_escape_string($this->conn, $id_truyen);
-        
-        $query = "SELECT COUNT(*) as total 
-                  FROM {$this->table} 
+
+        $query = "SELECT COUNT(*) as total
+                  FROM {$this->table}
                   WHERE id_truyen = '$id_truyen'";
-        
+
         $result = mysqli_query($this->conn, $query);
-        
         if (!$result) {
-            die("Lỗi truy vấn countLikes: " . mysqli_error($this->conn));
+            die('Loi truy van countFollows: ' . mysqli_error($this->conn));
         }
-        
+
         $row = mysqli_fetch_assoc($result);
         return $row['total'];
     }
 
-    // Đếm tổng số truyện yêu thích của user
-    public function countUserFavorites($id_nguoidung) {
+    public function countUserFollowed($id_nguoidung) {
         $id_nguoidung = mysqli_real_escape_string($this->conn, $id_nguoidung);
-        
-        $query = "SELECT COUNT(*) as total 
-                  FROM {$this->table} 
+
+        $query = "SELECT COUNT(*) as total
+                  FROM {$this->table}
                   WHERE id_nguoidung = '$id_nguoidung'";
-        
+
         $result = mysqli_query($this->conn, $query);
-        
         if (!$result) {
-            die("Lỗi truy vấn countUserFavorites: " . mysqli_error($this->conn));
+            die('Loi truy van countUserFollowed: ' . mysqli_error($this->conn));
         }
-        
+
         $row = mysqli_fetch_assoc($result);
         return $row['total'];
     }

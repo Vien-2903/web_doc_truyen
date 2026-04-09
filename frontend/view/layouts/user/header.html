@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -10,13 +10,11 @@
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/fonts/fontawesome-free-7.2.0-web/css/all.min.css">
 </head>
 <body>
-    <!-- Header -->
     <header>
         <div class="container">
             <div class="header-content">
                 <h1><a href="/web_doc_truyen/frontend/public/index.html">DocTruyen</a></h1>
                 <nav class="nav-left">
-                    <!-- Dropdown Thể Loại -->
                     <div class="theloai-dropdown">
                         <a href="javascript:void(0)">Thể Loại</a>
                         <div class="theloai-menu">
@@ -25,28 +23,20 @@
                             </div>
                         </div>
                     </div>
-                    <a href="/web_doc_truyen/frontend/public/index.php" class="quick-nav-link">
-                        Lịch Sử
-                    </a>
-                    <a href="/web_doc_truyen/frontend/view/yeuthich/yeuthich.html" class="quick-nav-link" id="favorite-link">
-                        Yêu Thích
-                    </a>
-                    <a href="/web_doc_truyen/frontend/public/index.php" class="quick-nav-link">
-                        Bình Luận
-                    </a>
+                    <a href="/web_doc_truyen/frontend/public/index.php" class="quick-nav-link">Lịch Sử</a>
+                    <a href="/web_doc_truyen/frontend/view/theo_doi_truyen/theo_doi_truyen.html" class="quick-nav-link" id="follow-link">Theo Dõi</a>
+                    <a href="/web_doc_truyen/frontend/public/index.php" class="quick-nav-link">Bình Luận</a>
                 </nav>
+
                 <form method="GET" action="/web_doc_truyen/frontend/public/index.php" class="header-search">
                     <input type="hidden" name="page" value="search">
                     <div class="search-input-wrap">
                         <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
-                        <input type="text"
-                               class="search-input-header"
-                               name="keyword"
-                               id="header-keyword"
-                               value="">
+                        <input type="text" class="search-input-header" name="keyword" id="header-keyword" value="">
                     </div>
                     <button type="submit" class="search-btn-header">Tìm kiếm</button>
                 </form>
+
                 <nav class="nav-right" id="nav-right">
                     <a href="/web_doc_truyen/frontend/view/log/login.html" class="login-state-btn">Đăng Nhập</a>
                 </nav>
@@ -100,7 +90,7 @@
                             method: 'POST',
                             credentials: 'same-origin',
                             headers: {
-                                'Accept': 'application/json'
+                                Accept: 'application/json'
                             }
                         })
                             .then(function () {
@@ -123,41 +113,39 @@
                 navRight.appendChild(loginLink);
             }
 
-            function setupFavoriteNav() {
-                var favoriteLink = document.getElementById('favorite-link');
-                if (!favoriteLink) {
+            function setupFollowNav() {
+                var followLink = document.getElementById('follow-link');
+                if (!followLink) {
                     return;
                 }
 
-                favoriteLink.addEventListener('click', function (event) {
+                followLink.addEventListener('click', function (event) {
                     event.preventDefault();
 
-                    fetch('/web_doc_truyen/backend/api/yeuthich/open.php', {
+                    fetch('/web_doc_truyen/backend/api/theo_doi_truyen/open_theodoi_api.php', {
                         method: 'GET',
                         credentials: 'same-origin'
                     })
                         .then(function (response) {
                             if (!response.ok) {
-                                return response.json().then(function (data) {
-                                    throw data;
-                                });
+                                return response.json().then(function (data) { throw data; });
                             }
                             return response.json();
                         })
                         .then(function (data) {
                             if (data.success) {
-                                window.location.href = '/web_doc_truyen/frontend/view/yeuthich/yeuthich.html';
+                                window.location.href = '/web_doc_truyen/frontend/view/theo_doi_truyen/theo_doi_truyen.html';
                             } else if (data.login_required) {
                                 window.location.href = '/web_doc_truyen/frontend/view/log/login.html';
                             } else {
-                                window.location.href = '/web_doc_truyen/frontend/view/yeuthich/yeuthich.html';
+                                window.location.href = '/web_doc_truyen/frontend/view/theo_doi_truyen/theo_doi_truyen.html';
                             }
                         })
                         .catch(function (error) {
                             if (error && error.login_required) {
                                 window.location.href = '/web_doc_truyen/frontend/view/log/login.html';
                             } else {
-                                window.location.href = '/web_doc_truyen/frontend/view/yeuthich/yeuthich.html';
+                                window.location.href = '/web_doc_truyen/frontend/view/theo_doi_truyen/theo_doi_truyen.html';
                             }
                         });
                 });
@@ -178,12 +166,12 @@
                     .then(function (data) {
                         renderCategories(data.danhSachTheLoai, data.thongBaoTheLoai);
                         renderUser(data.user || {});
-                        setupFavoriteNav();
+                        setupFollowNav();
 
                         if (keywordInput) {
                             keywordInput.value = data.keyword || '';
                         }
-                    })  
+                    })
                     .catch(function () {
                         renderCategories([], 'Không tải được dữ liệu thể loại');
                         renderUser({ isLoggedIn: false });
@@ -193,3 +181,5 @@
             loadHeaderData();
         })();
     </script>
+</body>
+</html>

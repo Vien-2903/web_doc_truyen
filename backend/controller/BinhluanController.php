@@ -1,8 +1,7 @@
 <?php
-require_once __DIR__ . '/../model/BinhluanModel.php';
+require_once __DIR__ . '/../model/BinhLuanModel.php';
 require_once __DIR__ . '/../model/TruyenModel.php';
 require_once __DIR__ . '/../model/ChuongModel.php';
-require_once(__DIR__ . '/../middleware/AuthMiddleware.php');
 
 class BinhluanController {
     private $model;
@@ -10,157 +9,317 @@ class BinhluanController {
     private $chuongModel;
 
     public function __construct() {
-        AuthMiddleware::checkLogin();
-        $this->model = new BinhluanModel();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $this->model = new BinhLuanModel();
         $this->truyenModel = new TruyenModel();
         $this->chuongModel = new ChuongModel();
     }
 
-    // ==================== CHUNG CHO CẢ ADMIN & USER ====================
-    
-    // Hiển thị danh sách truyện có bình luận
-    public function index() {
-        $isAdmin = $_SESSION['user']['vai_tro'] === 'admin';
-        
+    private function getCurrentUser() {
+        return $_SESSION['user'] ?? null;
+    }
+
+    public function getTruyenCommentsApi() {
+        $user = $this->getCurrentUser();
+        $isAdmin = $user && strtolower(trim((string)($user['vai_tro'] ?? ''))) === 'admin';
+
         if ($isAdmin) {
-            // Admin: Lấy tất cả truyện
-            $truyens = $this->model->getTruyenWithComments();
+            $data = $this->model->getTruyenWithComments();
+        } elseif ($user) {
+            $data = $this->model->getTruyenWithUserComments($user['id']);
         } else {
-            // User: Chỉ lấy truyện mà user đã bình luận
-            $id_nguoidung = $_SESSION['user']['id'];
-            $truyens = $this->model->getTruyenWithUserComments($id_nguoidung);
+            $data = $this->model->getTruyenWithComments();
         }
-        
-        require_once __DIR__ . '/../view/binhluan/list_truyen.php';
+
+        return [
+            'status' => 200,
+            'body' => [
+                'success' => true,
+                'data' => $data
+            ]
+        ];
     }
 
-    // Hiển thị bình luận của 1 truyện (CẢ ADMIN VÀ USER)
-    public function viewComments() {
-        $id_truyen = $_GET['id_truyen'];
+    public function getCommentsByTruyenApi($id_truyen) {
+        $id_truyen = intval($id_truyen);
+        if ($id_truyen <= 0) {
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'ID truyện không hợp lệ'
+                ]
+            ];
+        }
+
         $truyen = $this->truyenModel->getById($id_truyen);
+        if (!$truyen) {
+            return [
+                'status' => 404,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Không tìm thấy truyện'
+                ]
+            ];
+        }
+
         $comments = $this->model->getByTruyen($id_truyen);
-        
-        // Dùng CHUNG 1 file view
-        require_once __DIR__ . '/../view/binhluan/view_comments.php';
-    }
-
-    // Form thêm bình luận (CẢ ADMIN VÀ USER)
-    public function addForm() {
-        $id_truyen = $_GET['id_truyen'];
-        $truyen = $this->truyenModel->getById($id_truyen);
-        $chuongs = $this->getChuongsByTruyen($id_truyen);
-        $total_comments = $this->model->countByTruyen($id_truyen);
-        
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_chuong = $_POST['id_chuong'];
-            $noi_dung = trim($_POST['noi_dung']);
-            
-            $error = null;
-            if (empty($id_chuong)) {
-                $error = "Vui lòng chọn chương";
-            } elseif (empty($noi_dung)) {
-                $error = "Nội dung bình luận không được để trống";
-            } elseif (strlen($noi_dung) < 10) {
-                $error = "Nội dung bình luận phải có ít nhất 10 ký tự";
-            } else {
-                $data = [
-                    'id_nguoidung' => $_SESSION['user']['id'],
-                    'id_chuong' => $id_chuong,
-                    'noi_dung' => $noi_dung
-                ];
-                
-                if ($this->model->create($data)) {
-                    header("Location: index.php?page=binhluan&action=viewComments&id_truyen={$id_truyen}&success=added");
-                    exit();
-                } else {
-                    $error = "Không thể thêm bình luận. Vui lòng thử lại!";
-                }
-            }
+        $currentUser = ['id' => 0, 'vai_tro' => '', 'ten_dang_nhap' => ''];
+        $user = $this->getCurrentUser();
+        if ($user) {
+            $currentUser = [
+                'id' => isset($user['id']) ? (int)$user['id'] : 0,
+                'vai_tro' => $user['vai_tro'] ?? '',
+                'ten_dang_nhap' => $user['ten_dang_nhap'] ?? ''
+            ];
         }
-        
-        require_once __DIR__ . '/../view/binhluan/add_form.php';
+
+        return [
+            'status' => 200,
+            'body' => [
+                'success' => true,
+                'truyen' => $truyen,
+                'comments' => $comments,
+                'current_user' => $currentUser
+            ]
+        ];
     }
 
-    // Sửa bình luận (CẢ ADMIN VÀ USER - chỉ sửa của mình)
-    public function edit() {
-        $id = $_GET['id'];
+    public function getCommentByIdApi($id) {
+        $id = intval($id);
+        if ($id <= 0) {
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'ID bình luận không hợp lệ'
+                ]
+            ];
+        }
+
         $comment = $this->model->getById($id);
-        
-        // Chỉ được sửa bình luận của chính mình
-        if ($comment['id_nguoidung'] != $_SESSION['user']['id']) {
-            $_SESSION['error'] = 'Bạn chỉ có thể sửa bình luận của chính mình!';
-            header("Location: index.php?page=binhluan&action=index");
-            exit();
+        if (!$comment) {
+            return [
+                'status' => 404,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Không tìm thấy bình luận'
+                ]
+            ];
         }
-        
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $noi_dung = trim($_POST['noi_dung']);
-            
-            if (empty($noi_dung)) {
-                $error = "Nội dung bình luận không được để trống";
-            } elseif (strlen($noi_dung) < 10) {
-                $error = "Nội dung bình luận phải có ít nhất 10 ký tự";
-            } else {
-                if ($this->model->update($id, $noi_dung)) {
-                    $chuong = $this->model->getChuongInfo($comment['id_chuong']);
-                    header("Location: index.php?page=binhluan&action=viewComments&id_truyen=" . $chuong['id_truyen'] . "&success=edit");
-                    exit();
-                } else {
-                    $error = "Cập nhật bình luận thất bại";
-                }
-            }
-        }
-        
-        require_once __DIR__ . '/../view/binhluan/edit.php';
+
+        return [
+            'status' => 200,
+            'body' => [
+                'success' => true,
+                'data' => $comment
+            ]
+        ];
     }
 
-    // Xóa bình luận (ADMIN xóa tất cả, USER chỉ xóa của mình)
-    public function delete() {
-        $id = $_GET['id'];
+    public function createCommentApi($data) {
+        $user = $this->getCurrentUser();
+        if (!$user) {
+            return [
+                'status' => 401,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Chưa đăng nhập'
+                ]
+            ];
+        }
+
+        $id_chuong = intval($data['id_chuong'] ?? 0);
+        $noi_dung = trim($data['noi_dung'] ?? '');
+
+        if ($id_chuong <= 0) {
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Vui lòng chọn chương'
+                ]
+            ];
+        }
+
+        if ($noi_dung === '' || strlen($noi_dung) < 10) {
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Nội dung phải có ít nhất 10 ký tự'
+                ]
+            ];
+        }
+
+        $result = $this->model->create([
+            'id_nguoidung' => $user['id'],
+            'id_chuong' => $id_chuong,
+            'noi_dung' => $noi_dung
+        ]);
+
+        if ($result) {
+            return [
+                'status' => 201,
+                'body' => [
+                    'success' => true,
+                    'message' => 'Thêm bình luận thành công'
+                ]
+            ];
+        }
+
+        return [
+            'status' => 500,
+            'body' => [
+                'success' => false,
+                'message' => 'Không thể thêm bình luận'
+            ]
+        ];
+    }
+
+    public function updateCommentApi($data) {
+        $user = $this->getCurrentUser();
+        if (!$user) {
+            return [
+                'status' => 401,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Chưa đăng nhập'
+                ]
+            ];
+        }
+
+        $id = intval($data['id'] ?? 0);
+        $noi_dung = trim($data['noi_dung'] ?? '');
+
+        if ($id <= 0) {
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'ID bình luận không hợp lệ'
+                ]
+            ];
+        }
+
+        if ($noi_dung === '' || strlen($noi_dung) < 10) {
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Nội dung phải có ít nhất 10 ký tự'
+                ]
+            ];
+        }
+
         $comment = $this->model->getById($id);
-        $chuong = $this->model->getChuongInfo($comment['id_chuong']);
-        
-        $isAdmin = $_SESSION['user']['vai_tro'] === 'admin';
-        $isOwner = $comment['id_nguoidung'] == $_SESSION['user']['id'];
-        
-        // ADMIN xóa được tất cả, USER chỉ xóa của mình
+        if (!$comment) {
+            return [
+                'status' => 404,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Không tìm thấy bình luận'
+                ]
+            ];
+        }
+
+        $isAdmin = strtolower(trim((string)($user['vai_tro'] ?? ''))) === 'admin';
+        $isOwner = $comment['id_nguoidung'] == $user['id'];
         if (!$isAdmin && !$isOwner) {
-            $_SESSION['error'] = 'Bạn chỉ có thể xóa bình luận của chính mình!';
-            header("Location: index.php?page=binhluan&action=index");
-            exit();
+            return [
+                'status' => 403,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Bạn không có quyền sửa bình luận này'
+                ]
+            ];
         }
-        
-        if ($this->model->delete($id)) {
-            header("Location: index.php?page=binhluan&action=viewComments&id_truyen=" . $chuong['id_truyen'] . "&success=delete");
-        } else {
-            header("Location: index.php?page=binhluan&action=viewComments&id_truyen=" . $chuong['id_truyen'] . "&error=delete");
+
+        if ($this->model->update($id, $noi_dung)) {
+            return [
+                'status' => 200,
+                'body' => [
+                    'success' => true,
+                    'message' => 'Cập nhật bình luận thành công'
+                ]
+            ];
         }
-        exit();
+
+        return [
+            'status' => 500,
+            'body' => [
+                'success' => false,
+                'message' => 'Cập nhật thất bại'
+            ]
+        ];
     }
 
-    // ==================== HELPER METHODS ====================
-    
-    // Hàm lấy danh sách chương của truyện
-    private function getChuongsByTruyen($id_truyen) {
-        require_once __DIR__ . '/../database/myconnection.php';
-        $database = new Database();
-        $conn = $database->connect();
-        
-        $id_truyen = mysqli_real_escape_string($conn, $id_truyen);
-        $query = "SELECT * FROM chuong WHERE id_truyen = '$id_truyen' ORDER BY so_chuong ASC";
-        
-        $result = mysqli_query($conn, $query);
-        
-        if (!$result) {
-            die("Lỗi truy vấn: " . mysqli_error($conn));
+    public function deleteCommentApi($id) {
+        $user = $this->getCurrentUser();
+        if (!$user) {
+            return [
+                'status' => 401,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Chưa đăng nhập'
+                ]
+            ];
         }
-        
-        $chuongs = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $chuongs[] = $row;
+
+        $id = intval($id);
+        if ($id <= 0) {
+            return [
+                'status' => 400,
+                'body' => [
+                    'success' => false,
+                    'message' => 'ID bình luận không hợp lệ'
+                ]
+            ];
         }
-        
-        return $chuongs;
+
+        $comment = $this->model->getById($id);
+        if (!$comment) {
+            return [
+                'status' => 404,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Không tìm thấy bình luận'
+                ]
+            ];
+        }
+
+        $isAdmin = strtolower(trim((string)($user['vai_tro'] ?? ''))) === 'admin';
+        $isOwner = $comment['id_nguoidung'] == $user['id'];
+        if (!$isAdmin && !$isOwner) {
+            return [
+                'status' => 403,
+                'body' => [
+                    'success' => false,
+                    'message' => 'Bạn không có quyền xóa bình luận này'
+                ]
+            ];
+        }
+
+        if ($this->model->delete($id)) {
+            return [
+                'status' => 200,
+                'body' => [
+                    'success' => true,
+                    'message' => 'Xóa bình luận thành công'
+                ]
+            ];
+        }
+
+        return [
+            'status' => 500,
+            'body' => [
+                'success' => false,
+                'message' => 'Xóa thất bại'
+            ]
+        ];
     }
 }
 ?>
