@@ -1,98 +1,173 @@
-<?php require_once __DIR__ . '/../layouts/cover_image_helper.php'; ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($truyen['ten_truyen']); ?> - Web Đọc Truyện Online</title>
-    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/user.css">
-    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/truyen.css">
+    <title>Chi Tiết Truyện</title>
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/home.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/chitiettruyen.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/fonts/fontawesome-free-7.2.0-web/css/all.min.css">
 </head>
 <body>
-    <?php include __DIR__ . '/../layouts/user/header.html'; ?>
-    <!-- Main Content -->
-    <div class="container stories">
-        <!-- Nút quay lại -->
-        <div style="margin-bottom: 20px;">
-            <a href="/web_doc_truyen/frontend/public/index.php" class="back-button">
-                ← Quay lại
-            </a>
-        </div>
+    <div id="header-container"></div>
 
-        <!-- Card thông tin truyện -->
-        <div class="story-card truyen-info-card">
-            <div class="truyen-info-grid">
-                <!-- Ảnh bìa -->
-                <div>
-                    <img src="<?php echo htmlspecialchars(resolve_cover_image_url($truyen['anh_bia'] ?? '')); ?>"
-                        alt="<?php echo htmlspecialchars($truyen['ten_truyen']); ?>"
-                        class="truyen-cover"
-                        onerror="this.src='https://via.placeholder.com/180x240/2c3e50/ffffff?text=No+Image'">
-                </div>
-
-               <!-- Thông tin -->
-                <div class="truyen-details">
-                    <h2 class="truyen-title">
-                        <?php echo htmlspecialchars($truyen['ten_truyen']); ?>
-                    </h2>
-                    
-                    <p class="truyen-info-row">
-                        <strong class="info-label">👤 Tác giả:</strong> 
-                        <span class="info-value"><?php echo htmlspecialchars($truyen['tac_gia']); ?></span>
-                    </p>
-
-                    <p class="truyen-info-row">
-                        <strong class="info-label">📂 Thể loại:</strong> 
-                        <span class="info-value"><?php echo htmlspecialchars($truyen['the_loai']); ?></span>
-                    </p>
-
-                    <p class="truyen-info-row">
-                        <strong class="info-label">📊 Trạng thái:</strong> 
-                        <span class="status-badge-inline <?php 
-                            if($truyen['trang_thai'] == 'Đang ra') echo 'status-dangra';
-                            elseif($truyen['trang_thai'] == 'Hoàn thành') echo 'status-hoanthanh';
-                            else echo 'status-tamdung';
-                        ?>">
-                            <?php echo htmlspecialchars($truyen['trang_thai']); ?>
-                        </span>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Danh sách chương -->
-        <h2 class="chuong-title">📖 Danh Sách Chương</h2>
-        
-        <?php if(!empty($danhSachChuong)): ?>
-        <div class="story-grid">
-            <?php foreach($danhSachChuong as $chuong): ?>
-            <div class="story-card">
-                <a href="index.php?page=danhsachtrang&id=<?php echo $chuong['id']; ?>">
-                    <h3 class="chuong-card-title">
-                        Chương <?php echo $chuong['so_chuong']; ?>
-                    </h3>
-                    <p class="chuong-name">
-                        <?php echo htmlspecialchars($chuong['ten_chuong']); ?>
-                    </p>
-                    <p class="chuong-date">
-                        📅 <?php echo date('d/m/Y', strtotime($chuong['ngay_dang'])); ?>
-                    </p>
-                </a>
-            </div>
-            <?php endforeach; ?>
-        </div>
-        <?php else: ?>
-        <div class="story-card empty-chuong">
-            <p>Chưa có chương nào được đăng</p>
-        </div>
-        <?php endif; ?>
+    <div class="chitiet-container" id="chitiet-container">
+        <div class="loading">Đang tải thông tin truyện...</div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p>© 2024 Đọc Truyện Online - All Rights Reserved | Made with ❤️</p>
-        </div>
-    </footer>
+    <script>
+    // Load header
+    async function loadHeader() {
+        try {
+            const res = await fetch('/web_doc_truyen/frontend/view/layouts/user/header.html', {
+                credentials: 'same-origin'
+            });
+            const html = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const header = doc.querySelector('header');
+            const scripts = doc.querySelectorAll('script');
+            if (header) {
+                document.getElementById('header-container').innerHTML = header.outerHTML;
+                scripts.forEach(script => {
+                    const s = document.createElement('script');
+                    if (script.src) s.src = script.src;
+                    else s.textContent = script.textContent;
+                    document.body.appendChild(s);
+                });
+            }
+        } catch (err) {
+            console.error('Lỗi load header:', err);
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function resolveCoverUrl(anhBia) {
+    if (!anhBia) return 'https://via.placeholder.com/220x300/2c3e50/ffffff?text=No+Image';
+    
+    if (anhBia.startsWith('http://') || anhBia.startsWith('https://')) return anhBia;
+    
+    // Chuẩn hóa đường dẫn
+    let normalized = anhBia.replace(/\\/g, '/').trim();
+    
+    // Nếu có uploads/anhbia/ thì lấy tên file và trỏ về backend/uploads
+    if (normalized.includes('uploads/anhbia/')) {
+        const fileName = normalized.split('uploads/anhbia/').pop();
+        return '/web_doc_truyen/backend/uploads/anhbia/' + fileName;
+    }
+    
+    return '/web_doc_truyen/frontend/public/' + normalized;
+    }
+
+    // Load chi tiết truyện
+    async function loadChiTiet(id) {
+        try {
+            const res = await fetch(`/web_doc_truyen/backend/api/truyen/chitiet_truyen_api.php?id=${id}`);
+            const data = await res.json();
+
+            if (!data.success || !data.truyen) {
+                document.getElementById('chitiet-container').innerHTML = '<div class="error">Không tìm thấy truyện!</div>';
+                return;
+            }
+
+            const t = data.truyen;
+            const coverUrl = resolveCoverUrl(t.anh_bia);
+
+            document.title = escapeHtml(t.ten_truyen) + ' - DocTruyen';
+
+            document.getElementById('chitiet-container').innerHTML = `
+                <div class="chitiet-top">
+                    <div class="chitiet-cover">
+                        <img src="${coverUrl}" alt="${escapeHtml(t.ten_truyen)}"
+                             onerror="this.src='https://via.placeholder.com/220x300/2c3e50/ffffff?text=No+Image'">
+                    </div>
+                    <div class="chitiet-info">
+                        <h1 class="truyen-title">${escapeHtml(t.ten_truyen)}</h1>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fa-solid fa-pen-nib"></i> Tác giả:</span>
+                            <span class="info-value">${escapeHtml(t.tac_gia || t.ten_tacgia || 'Chưa rõ')}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fa-solid fa-tags"></i> Thể loại:</span>
+                            <span class="info-value">${escapeHtml(t.the_loai || 'Chưa phân loại')}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fa-solid fa-circle-dot"></i> Trạng thái:</span>
+                            <span class="info-value badge ${t.trang_thai === 'hoàn thành' ? 'badge-done' : 'badge-ongoing'}">
+                                ${escapeHtml(t.trang_thai || 'Đang cập nhật')}
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fa-solid fa-eye"></i> Lượt xem:</span>
+                            <span class="info-value">${Number(t.luot_xem || 0).toLocaleString('vi-VN')}</span>
+                        </div>
+                        <div class="mo-ta">
+                            <p class="mo-ta-label">Mô tả:</p>
+                            <p class="mo-ta-content">${escapeHtml(t.mo_ta || 'Chưa có mô tả')}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chuong-section">
+                    <h2 class="chuong-title"><i class="fa-solid fa-list"></i> Danh Sách Chương</h2>
+                    <div id="chuong-list">
+                        <div class="loading">Đang tải danh sách chương...</div>
+                    </div>
+                </div>
+            `;
+
+            // Load danh sách chương
+            loadChuong(id);
+
+        } catch (err) {
+            console.error('Lỗi:', err);
+            document.getElementById('chitiet-container').innerHTML = '<div class="error">Lỗi tải dữ liệu!</div>';
+        }
+    }
+
+    // Load danh sách chương
+    async function loadChuong(id_truyen) {
+        try {
+            const res = await fetch(`/web_doc_truyen/backend/api/chuong/get_all_chuong_api.php?id_truyen=${id_truyen}`);
+            const data = await res.json();
+            const chuongList = document.getElementById('chuong-list');
+
+            if (!data.success || !data.data || data.data.length === 0) {
+                chuongList.innerHTML = '<div class="no-chuong">Chưa có chương nào</div>';
+                return;
+            }
+
+            chuongList.innerHTML = data.data.map(c => `
+                <a class="chuong-item" href="#">
+                    <span class="chuong-so">Chương ${escapeHtml(String(c.so_chuong))}</span>
+                    <span class="chuong-ten">${escapeHtml(c.ten_chuong || '')}</span>
+                    <span class="chuong-ngay">${c.ngay_dang ? new Date(c.ngay_dang).toLocaleDateString('vi-VN') : ''}</span>
+                </a>
+            `).join('');
+
+        } catch (err) {
+            console.error('Lỗi load chương:', err);
+            document.getElementById('chuong-list').innerHTML = '<div class="error">Lỗi tải danh sách chương!</div>';
+        }
+    }
+
+    // Khởi động
+    const urlParams = new URLSearchParams(window.location.search);
+    const truyenId = urlParams.get('id');
+
+    if (!truyenId) {
+        document.getElementById('chitiet-container').innerHTML = '<div class="error">Không tìm thấy ID truyện!</div>';
+    } else {
+        loadHeader();
+        loadChiTiet(truyenId);
+    }
+    </script>
 </body>
 </html>

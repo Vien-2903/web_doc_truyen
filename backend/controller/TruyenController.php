@@ -459,7 +459,41 @@ class TruyenController {
 			];
 		}
 	}
-}
+	public function getChiTietTruyenApi($id) {
+        $id = intval($id);
 
+        if ($id <= 0) {
+            return [
+                'status' => 400,
+                'body' => ['success' => false, 'message' => 'ID không hợp lệ']
+            ];
+        }
+
+        try {
+            $truyen = $this->truyenModel->getTruyenById($id);
+
+            if (!$truyen) {
+                return [
+                    'status' => 404,
+                    'body' => ['success' => false, 'message' => 'Không tìm thấy truyện']
+                ];
+            }
+
+            $theloais = $this->truyenModel->getTheLoaiByTruyen($id);
+            $truyen['theloai_ids'] = array_column($theloais, 'id_theloai');
+
+            return [
+                'status' => 200,
+                'body' => ['success' => true, 'truyen' => $truyen]
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => 500,
+                'body' => ['success' => false, 'message' => 'Lỗi server: ' . $e->getMessage()]
+            ];
+        }
+    }
+}
 ?>
 
