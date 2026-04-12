@@ -1,7 +1,7 @@
-﻿<?php
+<?php
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, DELETE, OPTIONS");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -9,26 +9,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'], ['POST', 'DELETE'])) {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode([
         "success" => false,
-        "message" => "Chỉ chấp nhận phương thức POST hoặc DELETE"
+        "message" => "Chi chap nhan phuong thuc POST"
     ], JSON_UNESCAPED_UNICODE);
     exit();
 }
 
 require_once(__DIR__ . '/../../controller/BinhluanController.php');
 
+$payload = json_decode(file_get_contents('php://input'), true);
+$id = $payload['id'] ?? ($_POST['id'] ?? 0);
+
 $controller = new BinhluanController();
-
-$rawInput = json_decode(file_get_contents('php://input'), true);
-if (!is_array($rawInput)) {
-    $rawInput = [];
-}
-
-$id = $_POST['id'] ?? ($_GET['id'] ?? ($rawInput['id'] ?? 0));
-
 $response = $controller->deleteCommentApi($id);
 
 http_response_code($response['status']);

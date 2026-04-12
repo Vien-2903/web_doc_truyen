@@ -16,10 +16,13 @@ class BinhluanModel {
         
         $query = "SELECT bl.*, 
                          nd.ten_dang_nhap,
+                    nd.vai_tro,
+                    hs.avatar,
                          c.so_chuong,
                          c.tieu_de as tieu_de_chuong
                   FROM {$this->table} bl
                   INNER JOIN nguoidung nd ON bl.id_nguoidung = nd.id
+                LEFT JOIN hoso_nguoidung hs ON hs.id_nguoidung = nd.id
                   INNER JOIN chuong c ON bl.id_chuong = c.id
                   WHERE c.id_truyen = '$id_truyen'
                   ORDER BY bl.ngay_tao DESC";

@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode([
         "success" => false,
-        "message" => "Chỉ chấp nhận phương thức POST"
+        "message" => "Chi chap nhan phuong thuc POST"
     ], JSON_UNESCAPED_UNICODE);
     exit();
 }
@@ -21,13 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once(__DIR__ . '/../../controller/BinhluanController.php');
 
 $controller = new BinhluanController();
-
-$data = [
-    'id_chuong' => $_POST['id_chuong'] ?? '',
-    'noi_dung' => trim($_POST['noi_dung'] ?? '')
-];
-
-$response = $controller->createCommentApi($data);
+$response = $controller->createCommentApi($_POST);
 
 http_response_code($response['status']);
 echo json_encode($response['body'], JSON_UNESCAPED_UNICODE);

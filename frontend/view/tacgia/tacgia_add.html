@@ -1,0 +1,51 @@
+<a href="#" class="btn-home">← Quay lại danh sách</a>
+
+<h1 class="form-title">Thêm tác giả mới</h1>
+<form method="POST" action="#" class="user-form">
+    <table>
+        <tr>
+            <td><label for="ten_tacgia">Tên tác giả: <span style="color: red;">*</span></label></td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text"
+                        id="ten_tacgia"
+                        name="ten_tacgia"
+                    value=""
+                        required
+                        placeholder="Nhập tên tác giả">
+            </td>
+        </tr>
+
+        <tr>
+            <td><label for="but_danh">Bút danh:</label></td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" 
+                        id="but_danh" 
+                        name="but_danh" 
+                    value=""
+                        placeholder="Nhập bút danh (nếu có)">
+            </td>
+        </tr>
+
+        <tr>
+            <td><label for="gioi_thieu">Giới thiệu:</label></td>
+        </tr>
+        <tr>
+            <td>
+                <textarea id="gioi_thieu" 
+                          name="gioi_thieu" 
+                          rows="5" 
+                          placeholder="Giới thiệu về tác giả..."
+                          style="width: 100%; padding: 9px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; resize: vertical;"></textarea>
+            </td>
+        </tr>
+    </table>
+
+    <div class="form-actions">
+        <button type="submit">Thêm mới</button>
+        <a href="#" class="btn-back">Hủy</a>
+    </div>
+</form>

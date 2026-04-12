@@ -28,7 +28,7 @@
 
         async function loadHeader() {
             try {
-                const response = await fetch('/web_doc_truyen/frontend/view/layouts/user/header.html?v=20260408-3', {
+                const response = await fetch('/web_doc_truyen/frontend/view/layouts/user/header.html?v=20260413-1', {
                     credentials: 'same-origin'
                 });
 
@@ -128,16 +128,12 @@
                 const title = escapeHtml(story.ten_truyen || 'Không có tiêu đề');
                 const author = escapeHtml(story.tac_gia || 'Chưa rõ');
                 const cover = resolveCoverUrl(story.anh_bia);
+                const storyId = Number(story.id || 0);
 
                 return `
-                    <article class="story-card" data-story-id="${story.id}">
-<<<<<<< HEAD
-                        <a href="/web_doc_truyen/frontend/public/index.php?page=chitiet&id=${story.id}">
+                    <article class="story-card" data-story-id="${storyId}">
+                        <a href="/web_doc_truyen/frontend/view/truyen/chitiet.html?id=${storyId}">
                             <img src="${cover}" alt="${title}" onerror="this.src='https://via.placeholder.com/180x240/2c3e50/ffffff?text=No+Image'">
-=======
-                        <a href="/web_doc_truyen/frontend/view/truyen/chitiet.html?id=${story.id}">
-                            <img src="${cover}" alt="${title}" data-legacy-src="${escapeHtml(legacyCover)}" onerror="if(this.dataset.legacySrc && this.src !== this.dataset.legacySrc){this.src=this.dataset.legacySrc;this.dataset.legacySrc='';return;}this.src='https://via.placeholder.com/180x240/2c3e50/ffffff?text=No+Image'">
->>>>>>> 0449cf8f2e9a82eda804762ed1c13c192ffb428f
                             <h3>${title}</h3>
                             <p>Tác giả: ${author}</p>
                             <div class="story-meta">

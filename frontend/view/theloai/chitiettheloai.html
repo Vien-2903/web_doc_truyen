@@ -21,11 +21,11 @@
     </section>
 
     <script>
-        // ── 1. Load header (copy y chang từ index.html) ─────────────────
+        
         async function loadHeader() {
             try {
                 const res = await fetch(
-                    '/web_doc_truyen/frontend/view/layouts/user/header.html',
+                    '/web_doc_truyen/frontend/view/layouts/user/header.html?v=20260413-1',
                     { credentials: 'same-origin' }
                 );
                 const html = await res.text();
@@ -45,7 +45,6 @@
             }
         }
 
-        // ── 2. Helpers (copy từ index.html) ─────────────────────────────
         function escapeHtml(value) {
             return String(value ?? '')
                 .replace(/&/g, '&amp;')
@@ -86,7 +85,7 @@
             return '/web_doc_truyen/' + p;
         }
 
-        // ── 3. Render danh sách truyện ──────────────────────────────────
+      
         function renderStories(stories) {
             const grid = document.getElementById('story-grid');
 
@@ -118,7 +117,7 @@
             `).join('');
         }
 
-        // ── 4. Fetch API ────────────────────────────────────────────────
+
         async function loadTruyenTheoTheLoai() {
             const id    = new URLSearchParams(window.location.search).get('id');
             const title = document.getElementById('title');
@@ -159,7 +158,6 @@
             }
         }
 
-        // ── 5. Khởi chạy ────────────────────────────────────────────────
         loadHeader();
         loadTruyenTheoTheLoai();
     </script>

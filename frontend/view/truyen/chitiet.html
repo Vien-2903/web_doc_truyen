@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi Tiết Truyện</title>
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/home.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/theloai_user.css">
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/chitiettruyen.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/comments.css">
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/fonts/fontawesome-free-7.2.0-web/css/all.min.css">
 </head>
 <body>
@@ -19,7 +21,7 @@
     // Load header
     async function loadHeader() {
         try {
-            const res = await fetch('/web_doc_truyen/frontend/view/layouts/user/header.html', {
+            const res = await fetch('/web_doc_truyen/frontend/view/layouts/user/header.html?v=20260413-1', {
                 credentials: 'same-origin'
             });
             const html = await res.text();
@@ -121,10 +123,29 @@
                         <div class="loading">Đang tải danh sách chương...</div>
                     </div>
                 </div>
+                <section class="comments-host" id="comments-host" data-truyen-id="${Number(id)}" data-truyen-name="${escapeHtml(t.ten_truyen)}">
+                    <div class="comments-header" id="comments-header"></div>
+                    <div class="comments-form-wrap" id="comments-form-wrap"></div>
+                    <div class="comments-list" id="comments-list"></div>
+                </section>
             `;
 
             // Load danh sách chương
             loadChuong(id);
+
+            document.dispatchEvent(new CustomEvent('truyen:detail-ready', {
+                detail: {
+                    truyenId: id,
+                    truyenName: t.ten_truyen || ''
+                }
+            }));
+
+            if (window.CommentsModule && typeof window.CommentsModule.init === 'function') {
+                window.CommentsModule.init({
+                    truyenId: id,
+                    truyenName: t.ten_truyen || ''
+                });
+            }
 
         } catch (err) {
             console.error('Lỗi:', err);
@@ -169,5 +190,6 @@
         loadChiTiet(truyenId);
     }
     </script>
+    <script src="/web_doc_truyen/frontend/public/js/comments.js"></script>
 </body>
 </html>
