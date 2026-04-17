@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Đọc Truyện</title>
-    <link rel="stylesheet" href="../public/css/theloai_user.css">
-    <link rel="stylesheet" href="../public/css/home.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/theloai_user.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/home.css">
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/log.css">
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/fonts/fontawesome-free-7.2.0-web/css/all.min.css">
 </head>
@@ -26,11 +26,10 @@
                     <a href="/web_doc_truyen/frontend/view/theo_doi_truyen/theo_doi_truyen.html" class="quick-nav-link" id="follow-link">Theo Dõi</a>
                 </nav>
 
-                <form method="GET" action="/web_doc_truyen/frontend/public/index.php" class="header-search">
-                    <input type="hidden" name="page" value="search">
+                <form class="header-search" id="search-form">
                     <div class="search-input-wrap">
                         <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
-                        <input type="text" class="search-input-header" name="keyword" id="header-keyword" value="">
+                        <input type="text" class="search-input-header" name="keyword" id="header-keyword" value="" placeholder="Tìm kiếm truyện...">
                     </div>
                     <button type="submit" class="search-btn-header">Tìm kiếm</button>
                 </form>
@@ -178,6 +177,17 @@
 
             loadHeaderData();
         })();
+        // Xử lý tìm kiếm
+        var searchForm = document.getElementById('search-form');
+        if (searchForm) {
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                var keyword = document.getElementById('header-keyword').value.trim();
+                if (keyword) {
+                    window.location.href = '/web_doc_truyen/frontend/view/truyen/search.html?keyword=' + encodeURIComponent(keyword);
+                }
+            });
+        }
     </script>
 </body>
 </html>

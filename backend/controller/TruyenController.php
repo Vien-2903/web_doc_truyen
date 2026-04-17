@@ -494,6 +494,49 @@ class TruyenController {
             ];
         }
     }
+	public function searchTruyenApi($keyword) {
+    $keyword = trim($keyword);
+
+    if ($keyword === '') {
+        return [
+            'status' => 400,
+            'body' => [
+                'success' => false,
+                'message' => 'Vui lòng nhập từ khóa tìm kiếm'
+            ]
+        ];
+    }
+
+    try {
+        $data = $this->truyenModel->timKiem($keyword);
+
+        $stories = array_map(function($item) {
+            if (!isset($item['tac_gia']) && isset($item['ten_tacgia'])) {
+                $item['tac_gia'] = $item['ten_tacgia'];
+            }
+            return $item;
+        }, $data);
+
+        return [
+            'status' => 200,
+            'body' => [
+                'success' => true,
+                'keyword' => $keyword,
+                'total'   => count($stories),
+                'stories' => $stories
+            ]
+        ];
+
+    } catch (Exception $e) {
+        return [
+            'status' => 500,
+            'body' => [
+                'success' => false,
+                'message' => 'Lỗi server: ' . $e->getMessage()
+            ]
+        ];
+    }
+}
 }
 ?>
 
