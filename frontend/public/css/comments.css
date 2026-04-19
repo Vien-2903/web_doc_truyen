@@ -201,6 +201,58 @@
     margin-top: 10px;
     display: flex;
     justify-content: flex-end;
+    gap: 8px;
+}
+
+.comment-edit-panel {
+    margin-top: 8px;
+}
+
+.comment-edit-textarea {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: #0f172a;
+    background: #ffffff;
+    min-height: 110px;
+    resize: vertical;
+}
+
+.comment-edit-actions {
+    justify-content: flex-end;
+}
+
+.comment-edit-btn {
+    border: none;
+    background: #334155;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.comment-save-btn {
+    border: none;
+    background: #0f766e;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.comment-cancel-btn {
+    border: none;
+    background: #64748b;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-weight: 600;
 }
 
 .comment-delete-btn {
@@ -238,6 +290,48 @@
     color: #b91c1c;
 }
 
+.comments-toast-host {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.comments-toast {
+    min-width: 220px;
+    max-width: 320px;
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.comments-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.comments-toast.is-success {
+    background: #15803d;
+}
+
+.comments-toast.is-error {
+    background: #b91c1c;
+}
+
+.comments-toast.is-info {
+    background: #334155;
+}
+
 @media (max-width: 640px) {
     .comments-host {
         padding: 16px;
@@ -254,5 +348,16 @@
 
     .comment-identity {
         width: calc(100% - 54px);
+    }
+
+    .comments-toast-host {
+        right: 12px;
+        left: 12px;
+        bottom: 12px;
+    }
+
+    .comments-toast {
+        min-width: auto;
+        max-width: 100%;
     }
 }

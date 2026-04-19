@@ -226,14 +226,13 @@ class BinhluanController {
             ];
         }
 
-        $isAdmin = strtolower(trim((string)($user['vai_tro'] ?? ''))) === 'admin';
         $isOwner = $comment['id_nguoidung'] == $user['id'];
-        if (!$isAdmin && !$isOwner) {
+        if (!$isOwner) {
             return [
                 'status' => 403,
                 'body' => [
                     'success' => false,
-                    'message' => 'Bạn không có quyền sửa bình luận này'
+                    'message' => 'Bạn chỉ được sửa bình luận của chính mình'
                 ]
             ];
         }
