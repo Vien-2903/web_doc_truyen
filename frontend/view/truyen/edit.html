@@ -225,26 +225,36 @@
         }
     }
 
-    // Load thể loại
-    async function loadTheLoai() {
-        try {
-            const res = await fetch('../../../backend/api/truyen/get_theloai_api.php');
-            const data = await res.json();
-            const grid = document.getElementById('theloai-grid');
-            if (data.success && Array.isArray(data.theloais)) {
-                grid.innerHTML = '';
-                data.theloais.forEach(tl => {
-                    grid.innerHTML += `
-                        <label>
-                            <input type="checkbox" name="theloai_ids[]" value="${tl.id}">
-                            ${tl.ten_theloai}
-                        </label>`;
-                });
-            }
-        } catch (err) {
-            console.error('Lỗi load thể loại:', err);
+   async function loadTheLoai() {
+    try {
+        const res = await fetch('../../../backend/api/theloai/theloai_list_api.php');
+        const data = await res.json();
+
+        console.log("THE LOAI:", data); // debug
+
+        const grid = document.getElementById('theloai-grid');
+
+        if (data.success && Array.isArray(data.data)) {
+            grid.innerHTML = '';
+
+            data.data.forEach(tl => {
+                grid.innerHTML += `
+                    <label>
+                        <input type="checkbox" name="theloai_ids[]" value="${tl.id}">
+                        ${tl.ten_theloai}
+                    </label>
+                `;
+            });
+
+        } else {
+            grid.innerHTML = 'Không có thể loại';
         }
+
+    } catch (err) {
+        console.error('Lỗi load thể loại:', err);
+        document.getElementById('theloai-grid').innerHTML = 'Lỗi tải thể loại';
     }
+}
     </script>
 </body>
 </html>
