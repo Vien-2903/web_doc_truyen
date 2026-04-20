@@ -12,11 +12,11 @@
     <h1 class="form-title">Sửa Truyện</h1>
 
     <div class="user-form">
-        <div style="max-width:800px;margin:12px auto;text-align:left;padding:8px;border:1px solid #e0e0e0;border-radius:6px;background:#fafafa">
+        <div class="manual-id-box">
             <label for="manual-id"><strong>Nhập ID truyện để sửa:</strong></label>
-            <input type="number" id="manual-id" placeholder="VD: 123" style="width:120px;margin-left:8px">
-            <button type="button" id="btn-load" style="margin-left:8px">Tải</button>
-            <span id="current-info" style="margin-left:18px;color:#333">ID: <span id="display-id">-</span> • Tác giả: <span id="display-author">-</span></span>
+            <input type="number" id="manual-id" placeholder="VD: 123" class="manual-id-input">
+            <button type="button" id="btn-load" class="manual-id-btn">Tải</button>
+            <span id="current-info" class="manual-id-current">ID: <span id="display-id">-</span> • Tác giả: <span id="display-author">-</span></span>
         </div>
         <form method="POST" enctype="multipart/form-data">
             <!-- ID ẩn -->
@@ -59,7 +59,7 @@
                 <tr>
                     <td>Ảnh bìa hiện tại:</td>
                     <td>
-                        <img id="anh-bia-preview" src="" alt="Ảnh bìa" style="display:none; width:120px; margin-bottom:8px"><br>
+                        <img id="anh-bia-preview" src="" alt="Ảnh bìa" class="edit-cover-preview image-preview-hidden"><br>
                         <input type="file" name="anh_bia" accept="image/*">
                         <small>Để trống nếu không đổi ảnh</small>
                     </td>
@@ -82,7 +82,7 @@
         </form>
     </div>
 
-    <div id="api-message" style="max-width:800px;margin:12px auto;text-align:center"></div>
+    <div id="api-message"></div>
 
     <script>
     document.addEventListener('DOMContentLoaded', async function() {
@@ -180,7 +180,10 @@
                         } else {
                             img.src = t.anh_bia;
                         }
-                        img.style.display = 'block';
+                        img.classList.remove('image-preview-hidden');
+                    } else {
+                        const img = document.getElementById('anh-bia-preview');
+                        img.classList.add('image-preview-hidden');
                     }
 
                     // Tick thể loại đã chọn
