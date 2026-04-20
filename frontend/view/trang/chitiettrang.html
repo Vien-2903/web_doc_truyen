@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/home.css">
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/theloai_user.css">
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/chitiettruyen.css">
+    <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/chitiettrang.css">
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/css/comments.css">
     <link rel="stylesheet" href="/web_doc_truyen/frontend/public/fonts/fontawesome-free-7.2.0-web/css/all.min.css">
 </head>
@@ -119,11 +120,6 @@
                 : `<span class="btn-nav btn-disabled">Trang sau →</span>`;
 
             document.getElementById('main-content').innerHTML = `
-                <!-- Nút quay lại -->
-                <div class="back-button-wrapper">
-                    <a href="${BASE}/danhsach.html?id_chuong=${escapeHtml(chuong.id)}" class="btn-back">← Quay lại</a>
-                </div>
-
                 <!-- Thông tin trang -->
                 <div class="page-header">
                     <h1 class="page-title">

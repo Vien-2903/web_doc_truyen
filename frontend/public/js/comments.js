@@ -6,7 +6,8 @@
             id: 0,
             vai_tro: ''
         },
-        comments: []
+        comments: [],
+        editingCommentId: 0
     };
 
     let mounted = false;
@@ -115,6 +116,38 @@
         }
     }
 
+    function getToastHost() {
+        let host = document.getElementById('comments-toast-host');
+        if (host) {
+            return host;
+        }
+
+        host = document.createElement('div');
+        host.id = 'comments-toast-host';
+        host.className = 'comments-toast-host';
+        document.body.appendChild(host);
+        return host;
+    }
+
+    function showToast(message, type) {
+        const host = getToastHost();
+        const toast = document.createElement('div');
+        toast.className = 'comments-toast is-' + String(type || 'info');
+        toast.textContent = message || '';
+        host.appendChild(toast);
+
+        requestAnimationFrame(function () {
+            toast.classList.add('is-visible');
+        });
+
+        window.setTimeout(function () {
+            toast.classList.remove('is-visible');
+            window.setTimeout(function () {
+                toast.remove();
+            }, 220);
+        }, 2200);
+    }
+
     function canDeleteComment(comment) {
         const currentId = Number(state.currentUser?.id || 0);
         const role = String(state.currentUser?.vai_tro || '').toLowerCase();
@@ -124,6 +157,15 @@
         }
 
         return Number(comment.id_nguoidung) === currentId || role === 'admin';
+    }
+
+    function canEditComment(comment) {
+        const currentId = Number(state.currentUser?.id || 0);
+        if (currentId <= 0) {
+            return false;
+        }
+
+        return Number(comment.id_nguoidung) === currentId;
     }
 
     function renderHeader() {
@@ -152,8 +194,26 @@
         }
 
         list.innerHTML = state.comments.map(function (comment) {
+            const isEditing = Number(state.editingCommentId) === Number(comment.id);
+            const editButton = canEditComment(comment)
+                ? `<button type="button" class="comment-edit-btn" data-comment-edit="${Number(comment.id)}">Sửa</button>`
+                : '';
             const deleteButton = canDeleteComment(comment)
                 ? `<button type="button" class="comment-delete-btn" data-comment-delete="${Number(comment.id)}">Xóa</button>`
+                : '';
+            const actionHtml = editButton || deleteButton
+                ? `<div class="comment-actions">${editButton}${deleteButton}</div>`
+                : '';
+            const editPanelHtml = isEditing
+                ? `
+                    <div class="comment-edit-panel">
+                        <textarea class="comment-edit-textarea" data-comment-edit-input="${Number(comment.id)}" minlength="10">${escapeHtml(comment.noi_dung || '')}</textarea>
+                        <div class="comment-actions comment-edit-actions">
+                            <button type="button" class="comment-save-btn" data-comment-save="${Number(comment.id)}">Lưu</button>
+                            <button type="button" class="comment-cancel-btn" data-comment-cancel="${Number(comment.id)}">Hủy</button>
+                        </div>
+                    </div>
+                `
                 : '';
 
             const tag = getCommenterTag(comment);
@@ -178,11 +238,20 @@
                         </div>
                     </div>
                     <div class="comment-meta">Chương ${escapeHtml(comment.so_chuong || '')} - ${escapeHtml(comment.tieu_de_chuong || '')}</div>
-                    <p class="comment-content">${escapeHtml(comment.noi_dung || '').replace(/\n/g, '<br>')}</p>
-                    ${deleteButton ? `<div class="comment-actions">${deleteButton}</div>` : ''}
+                    ${isEditing ? editPanelHtml : `<p class="comment-content">${escapeHtml(comment.noi_dung || '').replace(/\n/g, '<br>')}</p>`}
+                    ${isEditing ? '' : actionHtml}
                 </article>
             `;
         }).join('');
+
+        if (state.editingCommentId > 0) {
+            const editingInput = list.querySelector(`[data-comment-edit-input="${Number(state.editingCommentId)}"]`);
+            if (editingInput) {
+                editingInput.focus();
+                editingInput.setSelectionRange(editingInput.value.length, editingInput.value.length);
+                editingInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
     }
 
     async function loadChapterOptions() {
@@ -275,6 +344,7 @@
 
             if (!res.ok || !json.success) {
                 setFormMessage(json.message || 'Không thể thêm bình luận', true);
+                showToast(json.message || 'Không thể thêm bình luận', 'error');
                 return;
             }
 
@@ -284,9 +354,11 @@
             }
 
             setFormMessage(json.message || 'Thêm bình luận thành công', false);
+            showToast(json.message || 'Thêm bình luận thành công', 'success');
             await loadComments();
         } catch (error) {
             setFormMessage('Lỗi kết nối, vui lòng thử lại', true);
+            showToast('Lỗi kết nối, vui lòng thử lại', 'error');
         } finally {
             submitBtn.disabled = false;
         }
@@ -308,13 +380,89 @@
 
             const json = await res.json();
             if (!res.ok || !json.success) {
-                window.alert(json.message || 'Xóa bình luận thất bại');
+                showToast(json.message || 'Xóa bình luận thất bại', 'error');
                 return;
             }
 
+            showToast(json.message || 'Xóa bình luận thành công', 'success');
             await loadComments();
         } catch (error) {
-            window.alert('Lỗi kết nối, chưa thể xóa bình luận');
+            showToast('Lỗi kết nối, chưa thể xóa bình luận', 'error');
+        }
+    }
+
+    async function handleEditComment(commentId) {
+        if (!commentId) {
+            return;
+        }
+
+        const comment = state.comments.find(function (item) {
+            return Number(item.id) === Number(commentId);
+        });
+
+        if (!comment) {
+            showToast('Không tìm thấy bình luận để sửa', 'error');
+            return;
+        }
+
+        state.editingCommentId = Number(commentId);
+        renderComments();
+    }
+
+    function cancelEditComment() {
+        if (state.editingCommentId <= 0) {
+            return;
+        }
+
+        state.editingCommentId = 0;
+        renderComments();
+        showToast('Đã hủy sửa bình luận', 'info');
+    }
+
+    async function saveEditComment(commentId) {
+        if (!commentId) {
+            return;
+        }
+
+        const input = document.querySelector(`[data-comment-edit-input="${Number(commentId)}"]`);
+        if (!input) {
+            showToast('Không tìm thấy nội dung để lưu', 'error');
+            return;
+        }
+
+        const normalizedContent = String(input.value || '').trim();
+        if (normalizedContent.length < 10) {
+            showToast('Nội dung phải có ít nhất 10 ký tự', 'error');
+            return;
+        }
+
+        input.disabled = true;
+
+        try {
+            const res = await fetch('/web_doc_truyen/backend/api/binhluan/update.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: commentId,
+                    noi_dung: normalizedContent
+                })
+            });
+
+            const json = await res.json();
+            if (!res.ok || !json.success) {
+                showToast(json.message || 'Sửa bình luận thất bại', 'error');
+                input.disabled = false;
+                return;
+            }
+
+            state.editingCommentId = 0;
+            showToast(json.message || 'Sửa bình luận thành công', 'success');
+            await loadComments();
+        } catch (error) {
+            input.disabled = false;
+            showToast('Lỗi kết nối, chưa thể sửa bình luận', 'error');
         }
     }
 
@@ -325,6 +473,30 @@
         }
 
         list.addEventListener('click', function (event) {
+            const saveButton = event.target.closest('[data-comment-save]');
+            if (saveButton) {
+                const saveId = Number(saveButton.getAttribute('data-comment-save'));
+                if (saveId > 0) {
+                    saveEditComment(saveId);
+                }
+                return;
+            }
+
+            const cancelButton = event.target.closest('[data-comment-cancel]');
+            if (cancelButton) {
+                cancelEditComment();
+                return;
+            }
+
+            const editButton = event.target.closest('[data-comment-edit]');
+            if (editButton) {
+                const editId = Number(editButton.getAttribute('data-comment-edit'));
+                if (editId > 0) {
+                    handleEditComment(editId);
+                }
+                return;
+            }
+
             const deleteButton = event.target.closest('[data-comment-delete]');
             if (!deleteButton) {
                 return;

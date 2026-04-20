@@ -1,3 +1,19 @@
+/* ===== PAGE WRAPPER ===== */
+#main-content {
+    max-width: 980px;
+    margin: 24px auto 40px;
+}
+
+.story-status {
+    text-align: center;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 22px;
+    color: #5d6d7e;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
 /* ===== BACK BUTTON ===== */
 .back-button-wrapper {
     margin-bottom: 20px;
